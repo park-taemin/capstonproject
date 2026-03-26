@@ -1,0 +1,169 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_SENSOR_MYSQL",
+      "label": "sensor_db (MySQL)",
+      "description": "LAMP MySQL - sensor_db",
+      "type": "datasource",
+      "pluginId": "mysql",
+      "pluginName": "MySQL"
+    }
+  ],
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "datasource", "id": "mysql", "name": "MySQL", "version": "1.0.0" },
+    { "type": "panel", "id": "timeseries", "name": "Time series", "version": "" },
+    { "type": "panel", "id": "gauge", "name": "Gauge", "version": "" },
+    { "type": "panel", "id": "stat", "name": "Stat", "version": "" }
+  ],
+  "annotations": { "list": [] },
+  "description": "4week 프로젝트 - 실시간 센서 데이터 모니터링 (MySQL → Grafana)",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_SENSOR_MYSQL}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 30 },
+              { "color": "red", "value": 37 }
+            ]
+          },
+          "unit": "celsius"
+        }
+      },
+      "gridPos": { "h": 6, "w": 4, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "title": "온도 (최신)",
+      "type": "gauge",
+      "targets": [
+        {
+          "datasource": { "type": "mysql", "uid": "${DS_SENSOR_MYSQL}" },
+          "rawSql": "SELECT NOW() AS time, AVG(temperature) AS temperature FROM sensor_data WHERE timestamp >= NOW() - INTERVAL 10 SECOND",
+          "format": "time_series",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_SENSOR_MYSQL}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 40 },
+              { "color": "yellow", "value": 70 },
+              { "color": "red", "value": 85 }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": { "h": 6, "w": 4, "x": 4, "y": 0 },
+      "id": 2,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "title": "습도 (최신)",
+      "type": "gauge",
+      "targets": [
+        {
+          "datasource": { "type": "mysql", "uid": "${DS_SENSOR_MYSQL}" },
+          "rawSql": "SELECT NOW() AS time, AVG(humidity) AS humidity FROM sensor_data WHERE timestamp >= NOW() - INTERVAL 10 SECOND",
+          "format": "time_series",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_SENSOR_MYSQL}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1020 },
+              { "color": "red", "value": 1040 }
+            ]
+          },
+          "unit": "pressurehpa"
+        }
+      },
+      "gridPos": { "h": 6, "w": 4, "x": 8, "y": 0 },
+      "id": 3,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "title": "기압 (최신)",
+      "type": "gauge",
+      "targets": [
+        {
+          "datasource": { "type": "mysql", "uid": "${DS_SENSOR_MYSQL}" },
+          "rawSql": "SELECT NOW() AS time, AVG(pressure) AS pressure FROM sensor_data WHERE timestamp >= NOW() - INTERVAL 10 SECOND",
+          "format": "time_series",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_SENSOR_MYSQL}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2 }, "unit": "celsius" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "humidity" }, "properties": [{ "id": "unit", "value": "percent" }] },
+          { "matcher": { "id": "byName", "options": "pressure" }, "properties": [{ "id": "unit", "value": "pressurehpa" }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 6 },
+      "id": 4,
+      "options": { "legend": { "calcs": ["mean", "max", "min"], "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "title": "센서 시계열 데이터 (온도 / 습도 / 기압)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "mysql", "uid": "${DS_SENSOR_MYSQL}" },
+          "rawSql": "SELECT timestamp AS time, temperature, humidity, pressure FROM sensor_data WHERE $__timeFilter(timestamp) ORDER BY timestamp ASC",
+          "format": "time_series",
+          "refId": "D"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_SENSOR_MYSQL}" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 1 }, "unit": "celsius" } },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 16 },
+      "id": 5,
+      "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom" } },
+      "title": "센서별 온도 비교",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "mysql", "uid": "${DS_SENSOR_MYSQL}" },
+          "rawSql": "SELECT timestamp AS time, sensor_id AS metric, temperature AS value FROM sensor_data WHERE $__timeFilter(timestamp) ORDER BY timestamp ASC",
+          "format": "time_series",
+          "refId": "E"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "tags": ["sensor", "mysql", "realtime"],
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": {},
+  "timezone": "Asia/Seoul",
+  "title": "4week - 실시간 센서 모니터링",
+  "uid": "sensor-realtime-4week",
+  "version": 1
+}

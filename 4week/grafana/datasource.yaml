@@ -1,0 +1,21 @@
+# Grafana 프로비저닝 - MySQL 데이터소스 설정
+# 위치: /etc/grafana/provisioning/datasources/sensor_mysql.yaml
+
+apiVersion: 1
+
+datasources:
+  - name: sensor_db (MySQL)
+    type: mysql
+    uid: sensor-mysql-ds
+    url: localhost:3306
+    database: sensor_db
+    user: root
+    secureJsonData:
+      password: ""          # 비밀번호 설정 시 입력
+    jsonData:
+      maxOpenConns: 10
+      maxIdleConns: 10
+      connMaxLifetime: 14400
+      timescaledb: false
+    isDefault: true
+    editable: true
